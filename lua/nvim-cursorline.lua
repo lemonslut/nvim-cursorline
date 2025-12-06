@@ -16,11 +16,13 @@ local DEFAULT_OPTIONS = {
     enable = true,
     timeout = 1000,
     lines = 3, -- total lines to highlight (centered on cursor)
+    disable_native = false,
   },
   cursorcolumn = {
     enable = true,
     timeout = 1000,
     columns = 3, -- total columns to highlight (centered on cursor)
+    disable_native = false,
   },
   cursorword = {
     enable = true,
@@ -143,6 +145,13 @@ end
 
 function M.setup(options)
   M.options = vim.tbl_deep_extend("force", DEFAULT_OPTIONS, options or {})
+
+  if M.options.cursorline.disable_native then
+    vim.opt.cursorline = false
+  end
+  if M.options.cursorcolumn.disable_native then
+    vim.opt.cursorcolumn = false
+  end
 
   if M.options.cursorline.enable then
     local function show_cursorline()

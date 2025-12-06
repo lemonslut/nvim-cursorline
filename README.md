@@ -10,26 +10,21 @@ Highlight words, lines, and columns around the cursor for Neovim
 
 Install with your favorite plugin manager.
 
-**Important:** Disable native `cursorline` and `cursorcolumn` in your config, as this plugin replaces them with extmark-based rendering.
-
-```lua
-vim.opt.cursorline = false
-vim.opt.cursorcolumn = false
-```
-
 ## Usage
 
 ```lua
 require('nvim-cursorline').setup {
   cursorline = {
     enable = true,
-    timeout = 0,    -- 0 = always visible, >0 = hide on move, reappear after ms
-    lines = 3,      -- number of lines to highlight (centered on cursor)
+    timeout = 0,           -- 0 = always visible, >0 = hide on move, reappear after ms
+    lines = 3,             -- number of lines to highlight (centered on cursor)
+    disable_native = true, -- disable vim's native cursorline
   },
   cursorcolumn = {
     enable = true,
     timeout = 0,
-    columns = 3,    -- number of columns to highlight (centered on cursor)
+    columns = 3,           -- number of columns to highlight (centered on cursor)
+    disable_native = true, -- disable vim's native cursorcolumn
   },
   cursorword = {
     enable = true,
