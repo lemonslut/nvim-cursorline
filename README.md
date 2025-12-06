@@ -1,18 +1,21 @@
 # nvim-cursorline
 
-Highlight words and lines on the cursor for Neovim
+Highlight words, lines, and columns around the cursor for Neovim
 
-- Underlines the word under the cursor.
-
-https://user-images.githubusercontent.com/42740055/163586251-15c7c709-86bd-4c17-a298-07681bada220.mp4
-
-- Show / hide cursorline in connection with cursor moving.
-
-https://user-images.githubusercontent.com/42740055/163586272-17560f83-9195-4cb4-8c1c-557cfaf775ea.mp4
+- Highlights multiple lines centered on cursor (configurable width)
+- Highlights multiple columns centered on cursor (extends into virtual space)
+- Underlines the word under the cursor
 
 ## Installation
 
 Install with your favorite plugin manager.
+
+**Important:** Disable native `cursorline` and `cursorcolumn` in your config, as this plugin replaces them with extmark-based rendering.
+
+```lua
+vim.opt.cursorline = false
+vim.opt.cursorcolumn = false
+```
 
 ## Usage
 
@@ -20,8 +23,13 @@ Install with your favorite plugin manager.
 require('nvim-cursorline').setup {
   cursorline = {
     enable = true,
-    timeout = 1000,
-    number = false,
+    timeout = 0,    -- 0 = always visible, >0 = hide on move, reappear after ms
+    lines = 3,      -- number of lines to highlight (centered on cursor)
+  },
+  cursorcolumn = {
+    enable = true,
+    timeout = 0,
+    columns = 3,    -- number of columns to highlight (centered on cursor)
   },
   cursorword = {
     enable = true,
