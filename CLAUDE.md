@@ -4,25 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-nvim-cursorline is a Neovim plugin written in Lua that provides two cursor-related features:
+nvim-cursorline is a Neovim plugin written in Lua that provides cursor-related visual features:
+- **cursorline**: Highlights multiple lines centered on cursor (configurable width)
+- **cursorcolumn**: Highlights multiple columns centered on cursor (configurable width, extends into virtual space)
 - **cursorword**: Underlines the word under the cursor
-- **cursorline**: Shows/hides the cursorline based on cursor movement with a configurable timeout
 
 ## Architecture
 
-Single-file plugin located at `lua/nvim-cursorline.lua`. The module exports a `setup(options)` function that:
-1. Merges user options with `DEFAULT_OPTIONS`
-2. Sets up autocommands for cursorline visibility toggling (uses `vim.loop.new_timer()` for delayed re-show)
-3. Sets up autocommands for cursorword highlighting via `matchadd()`/`matchdelete()`
+Single-file plugin at `lua/nvim-cursorline.lua`. Exports `setup(options)` which merges user config with `DEFAULT_OPTIONS` and registers autocommands.
 
-Key implementation details:
-- Window-local state stored in `vim.w` (cursorword, cursorword_id)
-- Uses `CursorMoved`/`CursorMovedI` events for both features
-- Cursorword pattern matching uses Vim regex (`\k*` for keyword chars)
+### Cursorline/Cursorcolumn (extmark-based)
+- Uses `nvim_buf_set_extmark` with dedicated namespaces (`ns_line`, `ns_col`)
+- Cursorline: highlights N lines with `hl_group = "CursorLine"`, `hl_eol = true`
+- Cursorcolumn: three rendering paths based on line length vs highlight range:
+  1. All columns have real chars → extmark with `hl_group`
+  2. Partial overlap → extmarks for real chars + `virt_text` for virtual space
+  3. Entirely virtual → `virt_text` positioned with `virt_text_win_col`
+- `timeout = 0` means always visible; `timeout > 0` hides on cursor move, reappears after delay
+- Separate `vim.loop.new_timer()` instances for line and column
+
+### Cursorword (matchadd-based)
+- Window-local state in `vim.w` (cursorword, cursorword_id)
+- Uses `matchadd()`/`matchdelete()` with `CursorWord` highlight group
+- Pattern matching via Vim regex (`\k*` for keyword chars)
 
 ## Testing
 
-No test framework is currently set up. To test manually, load the plugin in Neovim:
+No test framework. Manual testing:
 ```vim
 :lua require('nvim-cursorline').setup{}
 ```
