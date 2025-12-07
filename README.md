@@ -1,46 +1,92 @@
-# nvim-cursorline
+# clearview.nvim
 
-Highlight words, lines, and columns around the cursor for Neovim
+Tools for a readable, transparent terminal experience in Neovim.
 
-- Highlights multiple lines centered on cursor (configurable width)
-- Highlights multiple columns centered on cursor (extends into virtual space)
-- Underlines the word under the cursor
+## Features
+
+- **Cursorline** - Multi-line highlight centered on cursor with fade effect at edges
+- **Cursorcolumn** - Multi-column highlight (extends into virtual space)
+- **Cursorword** - Underline word under cursor
+- **Zen mode** - Padding split to constrain content width for focused writing
+
+Designed to work with semi-transparent terminals (e.g., Kitty with `transparent_background_colors`).
 
 ## Installation
 
-Install with your favorite plugin manager.
-
-## Usage
-
 ```lua
-require('nvim-cursorline').setup {
-  cursorline = {
-    enable = true,
-    timeout = 0,           -- 0 = always visible, >0 = hide on move, reappear after ms
-    lines = 3,             -- number of lines to highlight (centered on cursor)
-    disable_native = true, -- disable vim's native cursorline
-  },
-  cursorcolumn = {
-    enable = true,
-    timeout = 0,
-    columns = 3,           -- number of columns to highlight (centered on cursor)
-    disable_native = true, -- disable vim's native cursorcolumn
-  },
-  cursorword = {
-    enable = true,
-    min_length = 3,
-    hl = { underline = true },
-  }
+-- lazy.nvim
+{
+  "lemonslut/clearview.nvim",
+  config = function()
+    require("clearview").setup({
+      cursorline = {
+        enable = true,
+        timeout = 0,
+        lines = 9,
+        fade_lines = 2,
+      },
+    })
+
+    require("zen").setup({
+      width = 90,
+    })
+  end,
 }
 ```
 
-## Acknowledgments
+## Cursorline Options
 
-Thanks goes to these people/projects for inspiration:
+```lua
+require("clearview").setup({
+  cursorline = {
+    enable = true,
+    timeout = 0,           -- 0 = always visible, >0 = hide on move, reappear after ms
+    lines = 9,             -- number of lines to highlight (centered on cursor)
+    fade_lines = 2,        -- lines at edge using CursorLineFade1, CursorLineFade2, etc.
+    disable_native = true, -- disable vim's native cursorline
+  },
+  cursorcolumn = {
+    enable = false,
+    timeout = 0,
+    columns = 3,
+    disable_native = true,
+  },
+  cursorword = {
+    enable = false,
+    min_length = 3,
+    hl = { underline = true },
+  },
+})
+```
 
-- [delphinus/vim-auto-cursorline](https://github.com/delphinus/vim-auto-cursorline)
-- [itchyny/vim-cursorword](https://github.com/itchyny/vim-cursorword)
+## Zen Mode Options
+
+```lua
+require("zen").setup({
+  width = 90,        -- content width in columns
+  on_open = function()
+    vim.b.cmp_enabled = false
+  end,
+  on_close = function()
+    vim.b.cmp_enabled = true
+  end,
+})
+```
+
+**Commands**: `:Zen`, `:ZenOpen`, `:ZenClose`
+
+## Highlight Groups
+
+For the fade effect, define these highlight groups:
+
+```lua
+hl.CursorLine = { bg = "#3d2845" }
+hl.CursorLineFade1 = { bg = "#3b2643" }
+hl.CursorLineFade2 = { bg = "#392441" }
+```
+
+For transparent terminals, add matching colors to your terminal config (e.g., Kitty's `transparent_background_colors`).
 
 ## License
 
-This software is released under the MIT License, see LICENSE.
+MIT

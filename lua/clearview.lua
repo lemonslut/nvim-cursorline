@@ -35,18 +35,38 @@ local function clear_cursorline(bufnr)
   a.nvim_buf_clear_namespace(bufnr, ns_line, 0, -1)
 end
 
+local function get_cursorline_hl_group(distance, fade_lines)
+  if distance == 0 then
+    return "CursorLine"
+  elseif fade_lines and distance <= fade_lines then
+    return "CursorLineFade" .. distance
+  else
+    return "CursorLine"
+  end
+end
+
 local function draw_cursorline(bufnr)
   clear_cursorline(bufnr)
   local cursor_row = a.nvim_win_get_cursor(0)[1] - 1 -- 0-indexed
   local total_lines = a.nvim_buf_line_count(bufnr)
   local spread = math.floor(M.options.cursorline.lines / 2)
+  local fade_lines = M.options.cursorline.fade_lines
 
   for offset = -spread, spread do
     local row = cursor_row + offset
     if row >= 0 and row < total_lines then
+      local distance = math.abs(offset)
+      -- For fade effect, calculate distance from the edge of the core block
+      local core_size = spread - (fade_lines or 0)
+      local fade_distance = 0
+      if distance > core_size then
+        fade_distance = distance - core_size
+      end
+      local hl_group = get_cursorline_hl_group(fade_distance, fade_lines)
+
       a.nvim_buf_set_extmark(bufnr, ns_line, row, 0, {
         end_row = row + 1,
-        hl_group = "CursorLine",
+        hl_group = hl_group,
         hl_eol = true,
         priority = 100,
       })
@@ -232,5 +252,35 @@ function M.setup(options)
 end
 
 M.options = nil
+
+function M.increase_lines(amount)
+  amount = amount or 2
+  if M.options and M.options.cursorline then
+    M.options.cursorline.lines = M.options.cursorline.lines + amount
+    -- Redraw immediately
+    local bufnr = a.nvim_get_current_buf()
+    a.nvim_buf_clear_namespace(bufnr, ns_line, 0, -1)
+    if M.options.cursorline.enable then
+      -- Trigger redraw via cursor move event
+      vim.cmd("doautocmd CursorMoved")
+    end
+  end
+end
+
+function M.decrease_lines(amount)
+  amount = amount or 2
+  if M.options and M.options.cursorline then
+    local new_lines = M.options.cursorline.lines - amount
+    if new_lines >= 1 then
+      M.options.cursorline.lines = new_lines
+      -- Redraw immediately
+      local bufnr = a.nvim_get_current_buf()
+      a.nvim_buf_clear_namespace(bufnr, ns_line, 0, -1)
+      if M.options.cursorline.enable then
+        vim.cmd("doautocmd CursorMoved")
+      end
+    end
+  end
+end
 
 return M
